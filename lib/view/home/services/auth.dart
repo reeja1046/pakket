@@ -1,0 +1,101 @@
+import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:pakket/const/color.dart';
+import 'package:pakket/view/bottomnav.dart';
+
+Future<void> signUp(String name, String email, String password, String phone,
+    String dob, context) async {
+  const url = 'https://pakket-dev.vercel.app/api/app/register';
+
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'name': name,
+      'email': email,
+      'password': password,
+      'phone': phone,
+      'dob': dob,
+    }),
+  );
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    print("Signup successful: ${response.body}");
+    _showBlurDialog(context);
+  } else {
+    print("Signup failed: ${response.body}");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Signup failed')),
+    );
+  }
+}
+
+void _showBlurDialog(BuildContext context) {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    pageBuilder: (BuildContext buildContext, Animation animation,
+        Animation secondaryAnimation) {
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BottomNavScreen()),
+        );
+      });
+
+      return BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: CustomColors.baseColor,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.white,
+                    ),
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: CustomColors.baseColor,
+                      child: const Icon(Icons.check,
+                          color: Colors.white, size: 35),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Account created\nsuccessfully!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'You have successfully created\nan account with us! Get ready for a great\nshopping experience',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 60),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}

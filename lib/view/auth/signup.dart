@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/view/bottomnav.dart';
 import 'package:pakket/view/auth/signin.dart';
+import 'package:pakket/view/home/services/auth.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -16,6 +17,11 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -51,18 +57,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
             SizedBox(height: MediaQuery.of(context).size.height * 0.015),
             // Form fields
             Expanded(
-             
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  _buildTextField(hint: "Your Name"),
-                  _buildTextField(hint: "Your email id"),
-                  _buildTextField(hint: "Mobile number"),
                   _buildTextField(
-                    hint: "Dob",
+                      hint: "Your Name", controller: nameController),
+                  _buildTextField(
+                      hint: "Your email id", controller: emailController),
+                  _buildTextField(
+                      hint: "Mobile number", controller: phoneController),
+                  GestureDetector(
+                    onTap: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime(2000),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (pickedDate != null) {
+                        String formattedDob =
+                            "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                        print(formattedDob);
+                        setState(() {
+                          dobController.text = formattedDob;
+                        });
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: _buildTextField(
+                        hint: "Date of Birth",
+                        controller: dobController,
+                      ),
+                    ),
                   ),
                   _buildTextField(
                     hint: "Password",
+                    controller: passwordController,
                     isPassword: true,
                     isPasswordVisible: _isConfirmPasswordVisible,
                     onVisibilityToggle: () {
@@ -82,7 +113,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       padding: EdgeInsets.symmetric(vertical: height * 0.018),
                     ),
-                    onPressed: () => _showBlurDialog(context),
+                    onPressed: () {
+                      // _showBlurDialog(context);
+                      signUp(
+                          nameController.text.trim(),
+                          emailController.text.trim(),
+                          passwordController.text.trim(),
+                          phoneController.text.trim(),
+                          dobController.text.trim(),context);
+                    
+                    },
                     child: const Text(
                       'SUBMIT NOW',
                       style: TextStyle(fontSize: 18, color: Colors.black),
@@ -133,6 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // Responsive Text Field
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     bool isPassword = false,
     bool isPasswordVisible = false,
     VoidCallback? onVisibilityToggle,
@@ -140,6 +181,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: TextFormField(
+        controller: controller,
         obscureText: isPassword ? !isPasswordVisible : false,
         decoration: InputDecoration(
           hintText: hint,
@@ -169,71 +211,5 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  void _showBlurDialog(BuildContext context) {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      pageBuilder: (BuildContext buildContext, Animation animation,
-          Animation secondaryAnimation) {
-        Future.delayed(const Duration(seconds: 2), () {
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => BottomNavScreen()),
-          );
-        });
-
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Dialog(
-            backgroundColor: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: CustomColors.baseColor,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      const CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.white,
-                      ),
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: CustomColors.baseColor,
-                        child: const Icon(Icons.check,
-                            color: Colors.white, size: 35),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Account created\nsuccessfully!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'You have successfully created\nan account with us! Get ready for a great\nshopping experience',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(height: 60),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+ 
 }
