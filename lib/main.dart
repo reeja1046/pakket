@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pakket/view/home/home.dart';
+import 'package:pakket/view/product/productdetail.dart';
 import 'package:pakket/view/splash.dart';
 
 void main() {

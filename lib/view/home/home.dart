@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/const/items.dart';
+import 'package:pakket/model/trending.dart';
+import 'package:pakket/services/trending.dart';
 import 'package:pakket/view/allgrocery.dart';
 import 'package:pakket/view/home/widget.dart';
-
 
 int selectedCategoryIndex = 0; // Track selected category
 
@@ -15,6 +16,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late Future<List<Product>> _trendingProducts;
+
+  @override
+  void initState() {
+    super.initState();
+    _trendingProducts = fetchTrendingProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -220,138 +229,191 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: buildCategoryHeader(
                   context,
                   'Trending Offers',
-                  () {
-                  
-                  },
+                  () {},
                 ),
               ),
-              SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white,
-                        CustomColors.basecontainer,
-                      ],
-                    )),
-                child: Column(
-                  children: [
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: List.generate(products.length, (index) {
-                          double screenWidth =
-                              MediaQuery.of(context).size.width;
-                          double cardWidth = screenWidth * 0.4;
-                          double imageHeight = screenWidth * 0.25;
-                          double fontSize = screenWidth * 0.035;
+              FutureBuilder<List<Product>>(
+                future: _trendingProducts,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                        child: Text('No trending products available'));
+                  }
 
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 14.0),
-                            child: Container(
-                              margin:
-                                  EdgeInsets.only(right: screenWidth * 0.025),
-                              width: cardWidth,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white),
-                                child: Padding(
-                                  padding: EdgeInsets.all(screenWidth * 0.02),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              color: const Color.fromARGB(
-                                                  255, 237, 237, 237)),
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.15,
-                                          width: screenWidth,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Image.asset(
-                                              products[index]["image"]!,
-                                              height: imageHeight,
-                                              width: double.infinity,
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
+                  final products = snapshot.data!;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 14.0, right: 14.0),
+                        child: buildCategoryHeader(
+                          context,
+                          'Trending Offers',
+                          () {},
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white,
+                              CustomColors.basecontainer,
+                            ],
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children:
+                                    List.generate(products.length, (index) {
+                                  final product = products[index];
+                                  final option = product.options.first;
+
+                                  double screenWidth =
+                                      MediaQuery.of(context).size.width;
+                                  double cardWidth = screenWidth * 0.4;
+                                  double imageHeight = screenWidth * 0.25;
+                                  double fontSize = screenWidth * 0.035;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 14.0),
+                                    child: Container(
+                                      margin: EdgeInsets.only(
+                                          right: screenWidth * 0.025),
+                                      width: cardWidth,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: Colors.white,
                                         ),
-                                      ),
-                                      SizedBox(height: screenWidth * 0.02),
-                                      Text(
-                                        products[index]["name"]!,
-                                        style: TextStyle(
-                                          fontSize: fontSize,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: screenWidth * 0.01),
-                                      Text(
-                                        products[index]["quantity"]!,
-                                        style: TextStyle(
-                                          fontSize: fontSize * 0.9,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Rs.${products[index]["price"]!}',
-                                            style: TextStyle(
-                                              fontSize: fontSize,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          Container(
-                                            width: 60,
-                                            height: 30,
-                                            decoration: BoxDecoration(
-                                                color: CustomColors.baseColor,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(
+                                              screenWidth * 0.02),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(7)),
-                                            child: Center(
-                                              child: Text(
-                                                'Add',
-                                                style: TextStyle(
-                                                    fontSize: fontSize * 0.9,
-                                                    color: Colors.white),
+                                                    BorderRadius.circular(12),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    color: const Color.fromARGB(
+                                                        255, 237, 237, 237),
+                                                  ),
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height *
+                                                      0.15,
+                                                  width: screenWidth,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            5.0),
+                                                    child: Image.network(
+                                                      product.thumbnail,
+                                                      height: imageHeight,
+                                                      width: double.infinity,
+                                                      fit: BoxFit.contain,
+                                                      errorBuilder: (_, __,
+                                                              ___) =>
+                                                          const Icon(Icons
+                                                              .broken_image),
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                              SizedBox(
+                                                  height: screenWidth * 0.02),
+                                              Text(
+                                                product.title,
+                                                style: TextStyle(
+                                                  fontSize: fontSize,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              SizedBox(
+                                                  height: screenWidth * 0.01),
+                                              Text(
+                                                option.unit,
+                                                style: TextStyle(
+                                                  fontSize: fontSize * 0.9,
+                                                  color: Colors.grey[700],
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Rs.${option.offerPrice.toStringAsFixed(2)}',
+                                                    style: TextStyle(
+                                                      fontSize: fontSize,
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: 60,
+                                                    height: 30,
+                                                    decoration: BoxDecoration(
+                                                      color: CustomColors
+                                                          .baseColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              7),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        'Add',
+                                                        style: TextStyle(
+                                                          fontSize:
+                                                              fontSize * 0.9,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
-                          );
-                        }),
+                            const SizedBox(height: 30),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 30),
-                  ],
-                ),
-              ),
+                    ],
+                  );
+                },
+              )
             ],
           ),
         ),

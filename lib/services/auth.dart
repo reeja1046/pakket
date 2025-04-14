@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/const/color.dart';
 import 'package:pakket/view/bottomnav.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> signUp(String name, String email, String password, String phone,
     String dob, context) async {
@@ -98,4 +99,63 @@ void _showBlurDialog(BuildContext context) {
       );
     },
   );
+}
+
+Future<void> login(String phone, String password, BuildContext context) async {
+  const url = 'https://pakket-dev.vercel.app/api/app/login';
+
+  final body = {
+    "phone": phone.trim(),
+    "password": password.trim(),
+  };
+
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    final data = jsonDecode(response.body);
+    print("Login response: $data");
+    print("Status code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      final token = data['token'];
+      if (token != null) {
+        // ✅ Save token
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+        print("Token saved: $token");
+
+        // ✅ Navigate to Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BottomNavScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Token not found in response")),
+        );
+      }
+    } else {
+      // ❌ Show detailed error
+      String errorMessage = data['message'] ?? 'Login failed';
+
+      if (data['error'] != null && data['error'] is List) {
+        errorMessage += "\n• " + (data['error'] as List).join("\n• ");
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    }
+  } catch (e) {
+    print("Login error: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("An error occurred. Please try again.")),
+    );
+  }
 }

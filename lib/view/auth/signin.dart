@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/view/bottomnav.dart';
+import 'package:pakket/services/auth.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -12,7 +13,8 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool _isPasswordVisible = false;
-
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -51,9 +53,11 @@ class _SignInScreenState extends State<SignInScreen> {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  _buildTextField(hint: "Mobile number"),
+                  _buildTextField(
+                      hint: "Phone number", controller: phoneController),
                   _buildTextField(
                     hint: "Password",
+                    controller: passwordController,
                     isPassword: true,
                     isPasswordVisible: _isPasswordVisible,
                     onVisibilityToggle: () {
@@ -75,10 +79,12 @@ class _SignInScreenState extends State<SignInScreen> {
                       padding: EdgeInsets.symmetric(vertical: height * 0.015),
                     ),
                     onPressed: () {
-                      Navigator.pushReplacement(
+                      print(phoneController.text);
+                      print(passwordController.text);
+                      login(
+                        phoneController.text,
+                        passwordController.text,
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => BottomNavScreen()),
                       );
                     },
                     child: const Text(
@@ -98,6 +104,7 @@ class _SignInScreenState extends State<SignInScreen> {
   // Responsive Text Field
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     bool isPassword = false,
     bool isPasswordVisible = false,
     VoidCallback? onVisibilityToggle,
@@ -105,6 +112,7 @@ class _SignInScreenState extends State<SignInScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: TextFormField(
+        controller: controller,
         obscureText: isPassword ? !isPasswordVisible : false,
         decoration: InputDecoration(
           hintText: hint,
