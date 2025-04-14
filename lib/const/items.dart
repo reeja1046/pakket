@@ -7,17 +7,6 @@ final List<Map<String, String>> categorySection = [
   {"name": "Meat", "image": "assets/category-chicken.png"}
 ];
 
-final List<Map<String, String>> category = [
-  {"name": "Groceries", "image": "assets/fresh.png"},
-  {"name": "Vegetables", "image": "assets/fresh.png"},
-  {"name": "Fruits", "image": "assets/fresh.png"},
-  {"name": "Fish", "image": "assets/fresh.png"},
-  {"name": "Meat", "image": "assets/fresh.png"},
-  {"name": "Bakery", "image": "assets/fresh.png"},
-  {"name": "Dry Fruits", "image": "assets/fresh.png"},
-  {"name": "Snacks", "image": "assets/fresh.png"},
-];
-
 List<Map<String, String>> products = [
   {
     "name": "Wheat flour",

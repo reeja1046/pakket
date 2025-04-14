@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/const/items.dart';
+import 'package:pakket/model/allcategory.dart';
+import 'package:pakket/model/banner.dart';
 import 'package:pakket/model/trending.dart';
+import 'package:pakket/services/banner.dart';
+import 'package:pakket/services/category.dart';
 import 'package:pakket/services/trending.dart';
 import 'package:pakket/view/allgrocery.dart';
 import 'package:pakket/view/home/widget.dart';
@@ -71,7 +75,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              scrollCard(context),
+              
+              FutureBuilder<List<HeroBanner>>(
+                future: fetchHeroBanners(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                      height: 240,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  } else if (snapshot.hasError) {
+                    return SizedBox(
+                      height: 240,
+                      child: Center(child: Text('Failed to load banners')),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return SizedBox(
+                      height: 240,
+                      child: Center(child: Text('No banners available')),
+                    );
+                  }
+
+                  return scrollCard(context, snapshot.data!);
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.only(left: 14.0),
                 child: SizedBox(
@@ -147,72 +174,94 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 14.0, right: 14.0),
+                padding: const EdgeInsets.symmetric(horizontal: 14.0),
                 child: buildCategoryHeader(
                   context,
                   'Shop By Categories',
                   () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => AllGroceryItems(),
-                    ));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AllGroceryItems(),
+                      ),
+                    );
                   },
                 ),
               ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(left: 14.0, right: 14.0),
-                child: SizedBox(
-                    height: (category.length / 4).ceil() *
-                        120, // Adjust height based on items
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics:
-                          NeverScrollableScrollPhysics(), // Prevent inner scroll
-                      itemCount: category.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 20,
-                        childAspectRatio: 0.8,
-                      ),
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
+              const SizedBox(height: 10),
+              FutureBuilder<List<Category>>(
+                future: fetchCategories(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text("No categories found"));
+                  }
+
+                  final categories = snapshot.data!;
+                  final screenWidth = MediaQuery.of(context).size.width;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                    child: SizedBox(
+                      height: (categories.length / 4).ceil() * 120,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: categories.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 0.8,
+                        ),
+                        itemBuilder: (context, index) {
+                          final category = categories[index];
+
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  color: CustomColors.basecontainer),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Container(
-                                    height: 70,
-                                    width: 68,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: AssetImage(
-                                            category[index]["image"]!),
-                                        fit: BoxFit.cover,
+                                  color: CustomColors.basecontainer,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Container(
+                                      height: 70,
+                                      width: 68,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image:
+                                              NetworkImage(category.imageUrl),
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              category[index]["name"]!,
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.036,
-                                fontWeight: FontWeight.w400,
+                              const SizedBox(height: 8),
+                              Text(
+                                category.name,
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.036,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
-                        );
-                      },
-                    )),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
               SizedBox(height: 10),
               Padding(

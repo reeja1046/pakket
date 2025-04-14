@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pakket/model/banner.dart';
 
 Widget buildHeader(BuildContext context) {
   double screenWidth = MediaQuery.of(context).size.width;
@@ -66,30 +67,34 @@ Widget buildHeader(BuildContext context) {
   );
 }
 
-Widget scrollCard(BuildContext context) {
+Widget scrollCard(BuildContext context, List<HeroBanner> banners) {
   final PageController controller = PageController(
-    initialPage: 1,
-    viewportFraction:
-        0.85, // This allows the side cards to be partially visible
+    initialPage: 0,
+    viewportFraction: 0.85,
   );
-
-  final List<String> images = [
-    'assets/Milk.png',
-    'assets/homebanner.png',
-    'assets/Milk.png',
-  ];
 
   return SizedBox(
     height: 240,
     child: PageView.builder(
       controller: controller,
-      itemCount: images.length,
+      itemCount: banners.length,
       itemBuilder: (context, index) {
+        final banner = banners[index];
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(images[index], fit: BoxFit.contain),
+            child: Image.network(
+              banner.url,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) =>
+                  Center(child: Icon(Icons.error)),
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return Center(child: CircularProgressIndicator());
+              },
+            ),
           ),
         );
       },
