@@ -224,14 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         fit: BoxFit.contain)),
               ),
               SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(left: 14.0, right: 14.0),
-                child: buildCategoryHeader(
-                  context,
-                  'Trending Offers',
-                  () {},
-                ),
-              ),
               FutureBuilder<List<Product>>(
                 future: _trendingProducts,
                 builder: (context, snapshot) {
