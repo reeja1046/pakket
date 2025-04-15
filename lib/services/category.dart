@@ -14,7 +14,6 @@ Future<List<Category>> fetchCategories() async {
       'Content-Type': 'application/json',
     },
   );
-
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
     List result = data['categories'];

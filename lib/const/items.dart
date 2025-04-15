@@ -7,38 +7,7 @@ final List<Map<String, String>> categorySection = [
   {"name": "Meat", "image": "assets/category-chicken.png"}
 ];
 
-List<Map<String, String>> products = [
-  {
-    "name": "Wheat flour",
-    "price": "1200",
-    "image": "assets/home-dal.png",
-    "quantity": "1kg"
-  },
-  {
-    "name": "Surf Excel",
-    "price": "800",
-    "image": "assets/home-surf.png",
-    "quantity": "1kg"
-  },
-  {
-    "name": "Chandrika",
-    "price": "150",
-    "image": "assets/home-dal.png",
-    "quantity": "1kg"
-  },
-  {
-    "name": "Smart Watch",
-    "price": "200",
-    "image": "assets/home-surf.png",
-    "quantity": "1kg"
-  },
-  {
-    "name": "Camera",
-    "price": "900",
-    "image": "assets/home-dal.png",
-    "quantity": "1kg"
-  },
-];
+
 final List<Map<String, String>> grocerycategories = [
   {'image': 'assets/home-dal.png', 'name': 'Vegetables'},
   {'image': 'assets/home-surf.png', 'name': 'Fruits'},
