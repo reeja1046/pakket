@@ -1,44 +1,50 @@
-// lib/model/product.dart
-
-class Product {
-  final String id;
+class CategoryProduct {
+  final String productId;
   final String title;
   final String thumbnail;
   final List<ProductOption> options;
 
-  Product({
-    required this.id,
+  CategoryProduct({
+    required this.productId,
     required this.title,
     required this.thumbnail,
     required this.options,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
-    var optionsJson = json['options'] as List? ?? [];
-    List<ProductOption> optionsList = optionsJson.map((optionJson) => ProductOption.fromJson(optionJson)).toList();
-
-    return Product(
-      id: json['_id'] ?? '',
+  factory CategoryProduct.fromJson(Map<String, dynamic> json) {
+    return CategoryProduct(
+      productId: json['productId'] ?? '',
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'] ?? '',
-      options: optionsList,
+      options: (json['options'] as List)
+          .map((opt) => ProductOption.fromJson(opt))
+          .toList(),
     );
   }
 }
 
 class ProductOption {
   final String unit;
+  final double basePrice;
   final double offerPrice;
+  final bool inStock;
+  final String id;
 
   ProductOption({
     required this.unit,
+    required this.basePrice,
     required this.offerPrice,
+    required this.inStock,
+    required this.id,
   });
 
   factory ProductOption.fromJson(Map<String, dynamic> json) {
     return ProductOption(
       unit: json['unit'] ?? '',
-      offerPrice: (json['offer_price'] ?? 0).toDouble(),
+      basePrice: (json['basePrice'] as num).toDouble(),
+      offerPrice: (json['offerPrice'] as num).toDouble(),
+      inStock: json['inStock'] ?? false,
+      id: json['_id'] ?? '',
     );
   }
 }

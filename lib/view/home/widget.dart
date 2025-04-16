@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/model/banner.dart';
+import 'package:pakket/model/product.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/services/banner.dart';
 
@@ -156,6 +157,60 @@ Widget showScrollCard() {
       }
 
       return scrollCard(context, snapshot.data!);
+    },
+  );
+}
+
+Widget buildProductGrid(List<CategoryProduct> products) {
+  // Limit the list to max 8 items
+  final displayProducts =
+      products.length > 8 ? products.sublist(0, 8) : products;
+
+  return GridView.builder(
+    shrinkWrap: true,
+    physics: NeverScrollableScrollPhysics(),
+    itemCount: displayProducts.length,
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 4,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 0.65,
+    ),
+    padding: const EdgeInsets.all(14),
+    itemBuilder: (context, index) {
+      final product = displayProducts[index];
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 78,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                product.thumbnail,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(Icons.image_not_supported),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            product.title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
     },
   );
 }

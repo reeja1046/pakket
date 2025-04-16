@@ -119,8 +119,6 @@ Future<void> login(String phone, String password, BuildContext context) async {
     );
 
     final data = jsonDecode(response.body);
-    print("Login response: $data");
-    print("Status code: ${response.statusCode}");
 
     if (response.statusCode == 200) {
       final token = data['token'];

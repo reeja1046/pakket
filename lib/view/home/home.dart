@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/model/allcategory.dart';
+import 'package:pakket/model/product.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/services/category.dart';
+import 'package:pakket/services/product.dart';
 import 'package:pakket/services/trending.dart';
 import 'package:pakket/view/allgrocery.dart';
 import 'package:pakket/view/home/widget.dart';
@@ -18,11 +20,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Product>> _trendingProducts;
-
+  late Future<List<CategoryProduct>> _selectedCategoryProducts;
   @override
   void initState() {
     super.initState();
     _trendingProducts = fetchTrendingProducts();
+    _selectedCategoryProducts = fetchRandomProducts(8);
   }
 
   @override
@@ -106,6 +109,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap: () {
                                   setState(() {
                                     selectedCategoryIndex = index;
+                                    if (categories[index].name.toLowerCase() ==
+                                        'all items') {
+                                      _selectedCategoryProducts =
+                                          fetchRandomProducts(
+                                              8); // Load all products
+                                    } else {
+                                      _selectedCategoryProducts =
+                                          fetchProductsByCategory(
+                                              categories[index]
+                                                  .id); // Load by category
+                                    }
                                   });
                                 },
                                 child: Column(
@@ -160,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 14.0),
                         child: buildCategoryHeader(
                           context,
-                          selectedCategoryName,
+                          selectedCategoryName, // 👈 Dynamic text here
                           () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
@@ -170,7 +184,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                       ),
-                      
+                      FutureBuilder<List<CategoryProduct>>(
+                        future: _selectedCategoryProducts,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                                child: Text('Error: ${snapshot.error}'));
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return const Center(
+                                child: Text('No products found.'));
+                          }
+
+                          final products = snapshot.data!;
+                          return buildProductGrid(products);
+                        },
+                      )
                     ],
                   );
                 },

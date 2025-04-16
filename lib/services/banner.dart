@@ -19,7 +19,6 @@ Future<List<HeroBanner>> fetchHeroBanners() async {
       'Authorization': 'Bearer $token',
     },
   );
-  print(response.body);
   if (response.statusCode == 200) {
     final body = json.decode(response.body);
     final List banners = body['result'];
