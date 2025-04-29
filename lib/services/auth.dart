@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/const/color.dart';
 import 'package:pakket/view/bottomnav.dart';
@@ -21,14 +22,29 @@ Future<void> signUp(String name, String email, String password, String phone,
       'dob': dob,
     }),
   );
-
+  final data = jsonDecode(response.body);
   if (response.statusCode == 200 || response.statusCode == 201) {
-    print("Signup successful: ${response.body}");
+    final token = data['token'];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
     _showBlurDialog(context);
   } else {
-    print("Signup failed: ${response.body}");
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Signup failed')),
+      SnackBar(
+        backgroundColor: CustomColors.baseColor,
+        content: Text(
+          'Signup failed',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
     );
   }
 }
@@ -77,19 +93,22 @@ void _showBlurDialog(BuildContext context) {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Account created\nsuccessfully!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'You have successfully created\nan account with us! Get ready for a great\nshopping experience',
+                Text(
+                  'You have successfully created an account with us! Get ready for a great shopping experience',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black),
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                  ),
                 ),
                 const SizedBox(height: 60),
               ],
@@ -126,7 +145,6 @@ Future<void> login(String phone, String password, BuildContext context) async {
         // ✅ Save token
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
-        print("Token saved: $token");
 
         // ✅ Navigate to Home
         Navigator.pushReplacement(
@@ -147,13 +165,40 @@ Future<void> login(String phone, String password, BuildContext context) async {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+        SnackBar(
+          backgroundColor: CustomColors.baseColor,
+          content: Text(
+            'Invalid user data',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
       );
     }
   } catch (e) {
-    print("Login error: $e");
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("An error occurred. Please try again.")),
+      SnackBar(
+        backgroundColor: CustomColors.baseColor,
+        content: Text(
+          'An error occurred. Please try again.',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
     );
   }
 }

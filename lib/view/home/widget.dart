@@ -5,6 +5,8 @@ import 'package:pakket/model/banner.dart';
 import 'package:pakket/model/product.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/services/banner.dart';
+import 'package:pakket/services/productdetails.dart';
+import 'package:pakket/view/product/productdetail.dart';
 
 Widget buildHeader(BuildContext context) {
   double screenWidth = MediaQuery.of(context).size.width;
@@ -179,37 +181,52 @@ Widget buildProductGrid(List<CategoryProduct> products) {
     padding: const EdgeInsets.all(14),
     itemBuilder: (context, index) {
       final product = displayProducts[index];
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 78,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                product.thumbnail,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Icon(Icons.image_not_supported),
+      return GestureDetector(
+        onTap: () async {
+          final productId =
+              product.productId; // ensure your `CategoryProduct` model has `id`
+          final productDetail = await fetchProductDetail(productId);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ProductDetails(
+                      details: productDetail,
+                    )),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 78,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  product.thumbnail,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.image_not_supported),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            product.title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 8),
+            Text(
+              product.title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       );
     },
   );

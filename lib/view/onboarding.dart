@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/view/auth/signup.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -56,7 +57,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text('Skip'),
+                  Text(
+                    'Skip',
+                    style: GoogleFonts.poppins(),
+                  ),
                   SizedBox(width: 7),
                   CircleAvatar(
                     backgroundColor: CustomColors.baseColor,
@@ -121,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         'It is a long established fact that a reader\nwill be distracted by the readable',
                       ),
                       _buildPage(
-                        'Get Fresh Fruits & Vegetables',
+                        'Get Fresh Fruits and\nVegetables',
                         'Order fresh fruits and vegetables\nat your convenience.',
                       ),
                       _buildPage(
@@ -158,7 +162,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             color: Colors.white,
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -168,7 +172,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Text(
           description,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             color: Colors.black,
           ),
         ),

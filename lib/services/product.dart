@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:pakket/model/product.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 Future<List<CategoryProduct>> fetchRandomProducts(int maxCount) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
@@ -16,15 +17,11 @@ Future<List<CategoryProduct>> fetchRandomProducts(int maxCount) async {
     },
   );
 
-  print("Response of the data api call : ${response.body}");
-  print('[[[[[[]]]]]]');
-
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
 
     if (decoded['success'] == true && decoded['products'] is List) {
       final List<dynamic> data = decoded['products'];
-
       List<CategoryProduct> allProducts =
           data.map((e) => CategoryProduct.fromJson(e)).toList();
 
@@ -41,7 +38,6 @@ Future<List<CategoryProduct>> fetchRandomProducts(int maxCount) async {
 Future<List<CategoryProduct>> fetchProductsByCategory(String categoryId) async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
-  print(categoryId);
   final response = await http.get(
     Uri.parse(
         'https://pakket-dev.vercel.app/api/app/product?category=$categoryId'),
@@ -51,7 +47,6 @@ Future<List<CategoryProduct>> fetchProductsByCategory(String categoryId) async {
     },
   );
 
-  print(response.body);
   if (response.statusCode == 200) {
     final decoded = jsonDecode(response.body);
 

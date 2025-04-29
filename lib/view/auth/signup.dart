@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pakket/const/color.dart';
 import 'package:pakket/view/auth/signin.dart';
 import 'package:pakket/services/auth.dart';
@@ -8,7 +9,6 @@ class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _SignUpScreenState createState() => _SignUpScreenState();
 }
 
@@ -38,15 +38,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
             SizedBox(height: height * 0.02),
             SizedBox(height: height * 0.1, child: Image.asset('assets/pakket_logo.png')),
             SizedBox(height: height * 0.015),
-            const Text('Create New Account', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const Text(
-              'Set up your username and password.You\ncan always change it later.',
+            Text(
+              'Create New Account',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Set up your username and password.\nYou can always change it later.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: Colors.black),
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                color: Colors.black,
+              ),
             ),
             SizedBox(height: height * 0.015),
 
-            // Wrap ListView in a Form
             Expanded(
               child: Form(
                 key: _formKey,
@@ -125,7 +133,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     SizedBox(height: height * 0.025),
 
-                    // Submit Button
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: CustomColors.baseColor,
@@ -146,9 +153,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           );
                         }
                       },
-                      child: const Text(
+                      child: Text(
                         'SUBMIT NOW',
-                        style: TextStyle(fontSize: 18, color: Colors.black),
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
 
@@ -157,13 +167,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: RichText(
                         text: TextSpan(
                           text: 'Already have an account? ',
-                          style: const TextStyle(fontSize: 14, color: Color(0xFF141111)),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: const Color(0xFF141111),
+                          ),
                           children: [
                             TextSpan(
                               text: 'Log in',
-                              style: const TextStyle(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 color: CustomColors.baseColor,
                               ),
                               recognizer: TapGestureRecognizer()
@@ -189,7 +202,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // Updated buildTextField with validator
   Widget _buildTextField({
     required String hint,
     required TextEditingController controller,
@@ -204,8 +216,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         controller: controller,
         obscureText: isPassword ? !isPasswordVisible : false,
         validator: validator,
+        style: GoogleFonts.poppins(),
         decoration: InputDecoration(
           hintText: hint,
+          hintStyle: GoogleFonts.poppins(),
           filled: true,
           fillColor: Colors.grey[200],
           suffixIcon: isPassword

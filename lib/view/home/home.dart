@@ -8,8 +8,9 @@ import 'package:pakket/services/product.dart';
 import 'package:pakket/services/trending.dart';
 import 'package:pakket/view/allgrocery.dart';
 import 'package:pakket/view/home/widget.dart';
+import 'package:pakket/view/search.dart';
 
-int selectedCategoryIndex = 0; // Track selected category
+int selectedCategoryIndex = 0;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,12 +21,28 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Product>> _trendingProducts;
-  late Future<List<CategoryProduct>> _selectedCategoryProducts;
+  Future<List<Category>>? _categoriesFuture;
+  Future<List<CategoryProduct>>? _selectedCategoryProducts;
+
   @override
   void initState() {
     super.initState();
     _trendingProducts = fetchTrendingProducts();
-    _selectedCategoryProducts = fetchRandomProducts(8);
+    _categoriesFuture = fetchCategories();
+
+    _categoriesFuture!.then((categories) {
+      if (categories.isNotEmpty) {
+        final defaultCategory = categories[selectedCategoryIndex];
+        setState(() {
+          if (defaultCategory.name.toLowerCase() == 'all items') {
+            _selectedCategoryProducts = fetchRandomProducts(8);
+          } else {
+            _selectedCategoryProducts =
+                fetchProductsByCategory(defaultCategory.id);
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -38,46 +55,98 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 14.0, right: 14.0),
+              // Yellow background section
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x66CAD980), // 40% opacity
+                      Color(0x21CCDA86), // 13% opacity
+                      Color(0xFFFFFFFF), // full white
+                    ],
+                    stops: [
+                      0.0,
+                      0.95,
+                      0.100,
+                    ],
+                  ),
+                ),
                 child: Column(
                   children: [
-                    buildHeader(context),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: TextFormField(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: 'Search',
-                                prefixIcon: Icon(Icons.search_outlined),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 14.0, right: 14.0),
+                      child: buildHeader(context),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 14.0, right: 14.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 45,
+                              child: TextFormField(
+                                readOnly: true,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SearchDetails()),
+                                  );
+                                },
+                                textAlignVertical: TextAlignVertical.center,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 0, horizontal: 16),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: Colors.grey),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: Colors.grey),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color: CustomColors.baseColor,
+                                        width: 2),
+                                  ),
+                                  hintText: 'Search',
+                                  prefixIcon: Icon(Icons.search_outlined),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: CustomColors.baseColor,
-                          ),
-                          height: 40,
-                          width: 45,
-                          child: IconButton(
+                          const SizedBox(width: 10),
+                          Container(
+                            height: 45,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: CustomColors.baseColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: IconButton(
                               onPressed: () {},
                               icon: Icon(Icons.tune_rounded,
-                                  color: Colors.white)),
-                        ),
-                      ],
+                                  color: Colors.white, size: 22),
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    // Start of scroll card and rest of the white background UI
+                    showScrollCard(),
                   ],
                 ),
               ),
-              showScrollCard(),
+
               FutureBuilder<List<Category>>(
-                future: fetchCategories(),
+                future: _categoriesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -88,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   final categories = snapshot.data!;
-                  final screenWidth = MediaQuery.of(context).size.width;
                   final selectedCategoryName =
                       categories[selectedCategoryIndex].name;
 
@@ -96,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 14.0),
+                        padding: const EdgeInsets.only(left: 8.0),
                         child: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.12,
                           child: ListView.builder(
@@ -109,16 +177,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap: () {
                                   setState(() {
                                     selectedCategoryIndex = index;
-                                    if (categories[index].name.toLowerCase() ==
+                                    if (category.name.toLowerCase() ==
                                         'all items') {
                                       _selectedCategoryProducts =
-                                          fetchRandomProducts(
-                                              8); // Load all products
+                                          fetchRandomProducts(8);
                                     } else {
                                       _selectedCategoryProducts =
-                                          fetchProductsByCategory(
-                                              categories[index]
-                                                  .id); // Load by category
+                                          fetchProductsByCategory(category.id);
                                     }
                                   });
                                 },
@@ -174,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 14.0),
                         child: buildCategoryHeader(
                           context,
-                          selectedCategoryName, // 👈 Dynamic text here
+                          selectedCategoryName,
                           () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
@@ -208,15 +273,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 10),
-              SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 14.0, right: 14.0),
                 child: SizedBox(
-                    width: screenWidth,
-                    height: 240,
-                    child: Image.asset('assets/reward-Ad.png',
-                        fit: BoxFit.contain)),
+                  width: screenWidth,
+                  height: 240,
+                  child:
+                      Image.asset('assets/reward-Ad.png', fit: BoxFit.contain),
+                ),
               ),
               SizedBox(height: 10),
               showTrendingProduct(_trendingProducts),

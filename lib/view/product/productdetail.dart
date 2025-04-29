@@ -1,11 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pakket/const/color.dart';
-import 'package:pakket/view/cart.dart';
+import 'package:pakket/model/checkout.dart';
+import 'package:pakket/model/productdetails.dart';
 import 'package:pakket/view/checkout.dart';
 
 class ProductDetails extends StatefulWidget {
-  const ProductDetails({super.key});
+  final ProductDetail details;
+  const ProductDetails({super.key, required this.details});
 
   @override
   State<ProductDetails> createState() => _ProductDetailsState();
@@ -13,6 +15,26 @@ class ProductDetails extends StatefulWidget {
 
 class _ProductDetailsState extends State<ProductDetails> {
   bool showMore = false;
+  late List<int> quantities;
+
+  @override
+  void initState() {
+    super.initState();
+    quantities =
+        List.filled(widget.details.options.length, 1); // Default quantity = 1
+  }
+
+  int getTotalQuantity() {
+    return quantities.fold(0, (sum, qty) => sum + qty);
+  }
+
+  double getTotalAmount() {
+    double total = 0.0;
+    for (int i = 0; i < widget.details.options.length; i++) {
+      total += quantities[i] * widget.details.options[i].offerPrice;
+    }
+    return total;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,8 +100,8 @@ class _ProductDetailsState extends State<ProductDetails> {
             child: PageView.builder(
               itemCount: 3,
               itemBuilder: (context, index) {
-                return Image.asset(
-                  'assets/home-surf.png',
+                return Image.network(
+                  widget.details.images[index],
                   fit: BoxFit.contain,
                 );
               },
@@ -89,7 +111,7 @@ class _ProductDetailsState extends State<ProductDetails> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              3,
+              widget.details.images.length,
               (index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 8,
@@ -108,7 +130,7 @@ class _ProductDetailsState extends State<ProductDetails> {
 
   Widget _buildProductTitle() {
     return Text(
-      'Product Title',
+      widget.details.title,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -123,8 +145,10 @@ class _ProductDetailsState extends State<ProductDetails> {
         children: [
           TextSpan(
             text: showMore
-                ? 'This is the product description. It provides detailed information about the product. Additional details about the product, including its features, benefits, and usage instructions. '
-                : 'This is the product description. It provides detailed information about the product. ',
+                ? widget.details.description
+                : widget.details.description.length > 100
+                    ? '${widget.details.description.substring(0, 100)}... '
+                    : widget.details.description,
           ),
           TextSpan(
             text: showMore ? 'Show Less' : 'More',
@@ -138,19 +162,21 @@ class _ProductDetailsState extends State<ProductDetails> {
   }
 
   Widget _buildPriceAndOption() {
+    final firstOption = widget.details.options.first;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
-          children: const [
+          children: [
             Text(
-              'Rs.250/-',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              'Rs.${firstOption.offerPrice.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
-              'Rs.300/-',
-              style: TextStyle(
+              'Rs.${firstOption.basePrice.toStringAsFixed(2)}',
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 decoration: TextDecoration.lineThrough,
@@ -184,14 +210,14 @@ class _ProductDetailsState extends State<ProductDetails> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      '2 options',
-                      style: TextStyle(
+                    Text(
+                      '${widget.details.options.length} options',
+                      style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(width: 4),
                     Transform.rotate(
-                      angle: 1.57, // 90 degrees (π/2 radians)
+                      angle: 1.57,
                       child: const Icon(
                         Icons.arrow_forward_ios,
                         color: Colors.white,
@@ -226,22 +252,28 @@ class _ProductDetailsState extends State<ProductDetails> {
           const SizedBox(height: 16),
           ListView.builder(
             shrinkWrap: true,
-            itemCount: 2, // Example with 2 options
+            itemCount: widget.details.options.length,
             itemBuilder: (context, index) {
+              final option = widget.details.options[index];
               return ListTile(
-                leading: Image.asset('assets/home-surf.png', height: 40),
-                title: Text('Surf excel'),
+                leading: Image.network(
+                  widget.details.thumbnail, // Or use option.image if available
+                  height: 40,
+                  width: 40,
+                  fit: BoxFit.cover,
+                ),
+                title: Text(widget.details.title),
                 subtitle: IntrinsicHeight(
                   child: Row(
                     children: [
                       Text(
-                        '500 ml',
+                        option.unit,
                         style: const TextStyle(
                             fontSize: 12, color: Colors.black54),
                       ),
-                      VerticalDivider(),
+                      const VerticalDivider(),
                       Text(
-                        'Rs.79',
+                        'Rs.${option.offerPrice.toStringAsFixed(2)}',
                         style:
                             const TextStyle(fontSize: 14, color: Colors.black),
                       ),
@@ -252,12 +284,26 @@ class _ProductDetailsState extends State<ProductDetails> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          if (quantities[index] > 1) {
+                            quantities[index]--;
+                          }
+                        });
+                      },
                       icon: const Icon(Icons.remove_circle_outline),
                     ),
-                    Text('1'),
+                    Text(
+                      '${quantities[index]}',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          quantities[index]++;
+                        });
+                      },
                       icon: const Icon(Icons.add_circle_outline),
                     ),
                   ],
@@ -383,6 +429,7 @@ class _ProductDetailsState extends State<ProductDetails> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
           color: CustomColors.baseColor,
@@ -390,21 +437,39 @@ class _ProductDetailsState extends State<ProductDetails> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Text(
-                'Item Total: Rs.120',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+            Text(
+              'Qty: ${getTotalQuantity()} | Total: Rs.${getTotalAmount().toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             TextButton(
               onPressed: () {
+                // Prepare selected items
+                List<CheckoutItem> selectedItems = [];
+                for (int i = 0; i < widget.details.options.length; i++) {
+                  if (quantities[i] > 0) {
+                    selectedItems.add(
+                      CheckoutItem(
+                        title: widget.details.title,
+                        imageUrl: widget
+                            .details.thumbnail, // or option image if you have
+                        unit: widget.details.options[i].unit,
+                        price: widget.details.options[i].offerPrice,
+                        quantity: quantities[i],
+                      ),
+                    );
+                  }
+                }
+
+                // Navigate and pass data
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const CheckoutPage()),
+                  MaterialPageRoute(
+                    builder: (_) => CheckoutPage(selectedItems: selectedItems, quantities:quantities),
+                  ),
                 );
               },
               child: const Text(
