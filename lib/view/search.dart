@@ -26,7 +26,8 @@ class _SearchDetailsState extends State<SearchDetails> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
     setState(() => isLoading = true);
-
+    print('heii');
+    print(token);
     try {
       final response = await http.get(
         Uri.parse('https://pakket-dev.vercel.app/api/app/product'),
